@@ -2,9 +2,9 @@ import random
 import numpy as np
 
 def rows_columns(): #losowe wybranie ilości uczniów, liczby przedmiotów i limitów w grupach
-    rows=random.randint(50,120)
-    columns=random.randint(4,8)
-    limits = [random.randint(40, 80) for subject in range(columns)]
+    rows=random.randint(50,120) #wybór zakresu liczby uczniów
+    columns=random.randint(4,8) #wybór zakresu liczby przedmiotów
+    limits = [random.randint(40, 80) for subject in range(columns)] #wybór zakresu limitu w grupach
     return rows,columns,limits
 
 
@@ -14,6 +14,18 @@ def create_matrix(rows,columns):
         ok=random.sample(range(1,columns+1),columns) #wypisywanie tabeli z preferencjammi od 1 do liczby przedmiotów
         matrix.append(ok)
     return matrix
+
+def ideal_matrix(m):
+    ideal_matrix=[]
+    rows,columns=m.shape
+    subjects=round(columns/2)
+    for i in range (rows):
+        for j in range(columns):
+            if m[i][j]>=subjects:
+                ideal_matrix[i][j]=1
+            else:
+                ideal_matrix[i][j]=0
+    return ideal_matrix
 
 
 def create_mask(rows,columns): #tworzenie maski z 0 i 1
