@@ -1,16 +1,12 @@
 import AG_setup as ag
 import numpy as np
 
-r_c = ag.rows_columns()
-rows = r_c[0]
-columns = r_c[1]
 
-def crossing(rows,columns): #wstępne krzyżowanie
 
+def crossing(p1,p2): #krzyżowanie
+
+    rows, columns=p1.shape
     mask=ag.create_mask(rows,columns)
-    parents=ag.starting_parents(rows,columns)
-    p1=parents[0]
-    p2=parents[1]
     child1=np.empty(shape=(rows,columns))
     child2=np.empty(shape=(rows,columns))
     for i in range(rows):
