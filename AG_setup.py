@@ -9,20 +9,18 @@ def rows_columns(): #losowe wybranie ilości uczniów, liczby przedmiotów i lim
 
 
 def create_matrix(rows,columns):
-    matrix=np.empty(rows,columns)
+    matrix=[]
     for i in range(rows):
-        matrix[i]=random.sample(range(1,columns),columns) #wypisywanie tabeli z preferencjammi od 1 do liczby przedmiotów
+        ok=random.sample(range(1,columns+1),columns) #wypisywanie tabeli z preferencjammi od 1 do liczby przedmiotów
+        matrix.append(ok)
     return matrix
 
 
 def create_mask(rows,columns): #tworzenie maski z 0 i 1
-    if type(rows) or type(columns) != int:
-        return NULL
-    else:
-        mask=np.empty(rows,columns)
-        for i in range(0,rows):
-            for j in range(columns):
-                mask[i][j]=random.randint(0,1)
+    mask=[]
+    for i in range(rows):
+        for j in range(columns):
+            mask[i][j]=random.randint(0,1)
     return mask
 
 
