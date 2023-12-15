@@ -1,11 +1,10 @@
 import random
-import numpy
+import numpy as np
 
 def rows_columns(): #losowe wybranie ilości uczniów, liczby przedmiotów i limitów w grupach
     rows=random.randint(50,120)
     columns=random.randint(4,8)
-    for i in range(0,columns):
-        limits[i]=random.randint(40,80)
+    limits = [random.randint(40, 80) for _ in range(columns)]
     return rows,columns,limits
 
 
@@ -31,6 +30,10 @@ def starting_parents(row,columns):
     p1=create_matrix(rows,columns)
     p2=create_matrix(rows,columns)
     return p1,p2
+
+
+
+
 
 
 
