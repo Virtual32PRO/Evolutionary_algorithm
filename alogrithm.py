@@ -23,11 +23,7 @@ def crossing(rows,columns): #wstępne krzyżowanie
                 child2[i][j] = p1[i][j]
     return child1,child2
 
-children=crossing(5,7)
-child1=children[0]
-child2=children[1]
-print(child1)
-print(child2)
+
 
 
 
