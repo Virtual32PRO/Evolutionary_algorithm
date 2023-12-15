@@ -9,19 +9,19 @@ def rows_columns(): #losowe wybranie ilości uczniów, liczby przedmiotów i lim
 
 
 def create_matrix(rows,columns):
-    matrix=[]
+    matrix=np.empty(shape=(rows,columns))
     for i in range(rows):
-        ok=random.sample(range(1,columns+1),columns) #wypisywanie tabeli z preferencjammi od 1 do liczby przedmiotów
-        matrix.append(ok)
+        matrix[i]=random.sample(range(1,columns+1),columns) #wypisywanie tabeli z preferencjammi od 1 do liczby przedmiotów
+
     return matrix
 
 def ideal_matrix(m):
-    ideal_matrix=[]
     rows,columns=m.shape
+    ideal_matrix=np.empty(shape=(rows,columns))
     subjects=round(columns/2)
-    for i in range (rows):
+    for i in range(rows):
         for j in range(columns):
-            if m[i][j]>=subjects:
+            if m[i][j]>subjects:
                 ideal_matrix[i][j]=1
             else:
                 ideal_matrix[i][j]=0
@@ -37,8 +37,6 @@ def starting_parents(rows,columns):
     p1=create_matrix(rows,columns)
     p2=create_matrix(rows,columns)
     return p1,p2
-
-
 
 
 

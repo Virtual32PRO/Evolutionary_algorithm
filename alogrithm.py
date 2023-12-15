@@ -1,11 +1,12 @@
 import AG_setup as ag
 import numpy as np
 
+r_c = ag.rows_columns()
+rows = r_c[0]
+columns = r_c[1]
 
-def crossing(): #wstępne krzyżowanie
-    r_c=ag.rows_columns()
-    rows=r_c[0]
-    columns=r_c[1]
+def crossing(rows,columns): #wstępne krzyżowanie
+
     mask=ag.create_mask(rows,columns)
     parents=ag.starting_parents(rows,columns)
     p1=parents[0]
@@ -22,7 +23,7 @@ def crossing(): #wstępne krzyżowanie
                 child2[i][j] = p1[i][j]
     return child1,child2
 
-children=crossing()
+children=crossing(5,7)
 child1=children[0]
 child2=children[1]
 print(child1)
