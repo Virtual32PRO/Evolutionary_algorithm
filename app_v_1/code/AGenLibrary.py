@@ -9,7 +9,7 @@ pm = 0.01  # mutations
 ps = 0.05  # mutation severity
 n=80   #liczba studentów
 m= 8  #liczba przedmiotów
-limit=50 # limit osoób na przedmiocie
+limit=80 # limit osoób na przedmiocie
 
 
 
@@ -30,13 +30,32 @@ def excluded_subjects(m):
         verse[i] = 1
     return address
 
-def check_subject_limits(matrix,address):
-    for wiersz in matrix:
+def generate_binary_list(length, forbidden_positions):
+    ones_count = 3
+    allowed_positions = [i for i in range(length) if i not in forbidden_positions]
+
+    if len(allowed_positions) < ones_count:
+        raise ValueError("Zbyt mało dostępnych pozycji dla jednynek.")
+
+    random_ones_positions = sample(allowed_positions, ones_count)
+    binary_list = [1 if i in random_ones_positions else 0 for i in range(length)]
+
+    return binary_list
+
+def check_bad_subject_limits(matrix,address):
+    m=len(matrix[0])
+    for i,wiersz in enumerate(matrix):
         if all(wiersz[i] == 1 for i in address):
+            new_row=generate_binary_list(m,address)
+            matrix[i]=new_row
+
+    return matrix
+
+def check_good_subject_limits(matrix,address):
+    for wiersz in matrix:
+        if any(all(wiersz[j] == 1 for j in id) for id in address):
             return 1
     return 0
-
-
 
 class Element(ABC):
 
@@ -77,7 +96,18 @@ class GeneticAlgorithm:
         population.sort(key=lambda x: -x.fitness)
         population_len = len(population)
         i = 0
-        subjects=excluded_subjects(m)
+        j=1
+        while j !=0:
+            bad_subjects=excluded_subjects(m)
+            good_subjects=excluded_subjects(m)
+            if bad_subjects==good_subjects:
+                good_subjects=excluded_subjects(m)
+            else:
+                j-=1
+
+        print("Przedmioty wykluczające się :",bad_subjects)
+        print("Przedmioty, które muszą być razem: ",good_subjects)
+
         while True:
             selected = self.selection_model(population)
             new_population = selected.copy()
@@ -85,7 +115,8 @@ class GeneticAlgorithm:
                 child = choice(population).crossover(choice(population))
                 if random() <= self.mutation_probability:
                     child.mutation()
-                if check_group_limits(child.matrix, limit) == 0 and check_subject_limits(child.matrix,subjects):
+                child.matrix=check_bad_subject_limits(child.matrix,bad_subjects)
+                if check_group_limits(child.matrix, limit) == 0:
                     new_population.append(child)
 
 
@@ -95,6 +126,6 @@ class GeneticAlgorithm:
             i += 1
             if self.stop_condition(i):
                 break
-print(excluded_subjects(m))
+
 
 
