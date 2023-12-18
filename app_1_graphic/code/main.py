@@ -90,9 +90,9 @@ class ScheduleMatrix(Element):
         super().__init__()
 
     def _perform_mutation(self):
-        for _ in range(int(ps*frontend.n)):
-            random_index = randint(0, n-1)
-            self.matrix[random_index]=random_verse(m)
+        for _ in range(int(ps*self.n)):
+            random_index = randint(0, self.n-1)
+            self.matrix[random_index]=random_verse(self.m)
 
 
     def crossover(self, element2: 'Element' ) -> 'Element':
@@ -142,4 +142,6 @@ if __name__ == "__main__":
     button_manager.place_buttons()
 
     window.mainloop()
+
+
 
