@@ -1,8 +1,13 @@
 from abc import abstractmethod, ABC
 from random import random, choice
+import numpy as np
+
 is_running = False
 list_x=[]
 list_y=[]
+
+
+
 
 class Element(ABC):
 
@@ -23,6 +28,11 @@ class Element(ABC):
 
     @abstractmethod
     def evaluate_function(self):
+        pass
+
+
+    @abstractmethod
+    def check_group_limits(self):
         pass
 
 class GeneticAlgorithm:
@@ -52,7 +62,9 @@ class GeneticAlgorithm:
                 child = choice(population).crossover(choice(population))
                 if random() <= self.mutation_probability:
                     child.mutation()
-                new_population.append(child)
+                if child.check_group_limits() == 0:
+                    new_population.append(child)
+
 
             population = new_population
             the_best_match = max(population, key=lambda x: x.fitness)

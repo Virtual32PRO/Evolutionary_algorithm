@@ -1,23 +1,23 @@
 import random
 
-def generate_binary_list(length, forbidden_positions):
-    ones_count = 3
-    allowed_positions = [i for i in range(length) if i not in forbidden_positions]
+def generate_random_binary_list(length, bad_addresses, good_addresses):
+    #length=len(matrix[0])
+    i=1
+    result=[]
+    while i!=0:
+        result = [0 for _ in range(length)]
+        address = random.sample(range(length), 3)
+        for x in address:
+            result[x] = 1
+        for j in range(length):
+            if result[bad_addresses[0]]==0 or result[bad_addresses[1]]==0 or result[good_addresses[0]]==result[good_addresses[1]]:
+                i-=1
+    return result
 
-    if len(allowed_positions) < ones_count:
-        raise ValueError("Zbyt mało dostępnych pozycji dla jednynek.")
+length=8
+b=[0,7]
+g=[1,5]
 
-    random_ones_positions = random.sample(allowed_positions, ones_count)
-    binary_list = [1 if i in random_ones_positions else 0 for i in range(length)]
+print(generate_random_binary_list(length,b,g))
 
-    return binary_list
 
-# Przykład użycia
-length_of_list = 10
-forbidden_positions = [2, 5, 8]
-
-try:
-    result_list = generate_binary_list(length_of_list, forbidden_positions)
-    print(result_list)
-except ValueError as e:
-    print(e)

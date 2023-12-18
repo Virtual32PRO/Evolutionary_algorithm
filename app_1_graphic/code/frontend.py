@@ -47,6 +47,7 @@ class LabelManager:
         self.label_pc = tk.Label(master, text="PC")
         self.label_pm = tk.Label(master, text="PM")
         self.label_ps = tk.Label(master, text="PS")
+        self.label_limit=tk.Label(master,text="Limit w grupach")
         self.label_iter = tk.Label(master, text="Podaj liczbę iteracji")
         self.label_legenda = tk.Label(master,
                                       text="P - Liczność populacji - domyślnie 100,\n"
@@ -71,14 +72,15 @@ class LabelManager:
         self.label_pc.place(x=20, y=230)
         self.label_pm.place(x=20, y=280)
         self.label_ps.place(x=20, y=330)
-        self.label_iter.place(x=10, y=380)
-        self.label_legenda.place(x=20, y=430)
+        self.label_iter.place(x=20, y=380)
+        self.label_limit.place(x=20,y=430)
+        self.label_legenda.place(x=20, y=480)
         self.label_matrix_in.place(x=750, y=100)
         self.label_matrix_description.place(x=750, y=20)
         self.label_n.place(x=950, y=20)
         self.label_m.place(x=1150, y=20)
 class ButtonManager:
-    def __init__(self, master, start_action, stop_action, update_action,entry_manager_instance,label_manager_instance):
+    def __init__(self, master, start_action, stop_action, update_action,entry_manager_instance,label_manager_instance,limits):
         self.master = master
         self.label_manager=label_manager_instance
         self.entry_manager=entry_manager_instance
@@ -86,12 +88,16 @@ class ButtonManager:
         self.stop_button = tk.Button(master, text="Stop", command=stop_action)
         self.update_button = tk.Button(master, text="Wprowadź dane", command=lambda: update_action(self.entry_manager))
         self.create_matrix_button = tk.Button(master, text="Wygeneruj preferencje studentów", command=lambda:create_preference_matrix(self.label_manager))
+        self.condition1_button=tk.Button(master,text="Warunek wykluczający przedmioty",command=lambda:limits(m))
+        #self.condition2_button = tk.Button(master, text="Warunek łączący przedmioty", command=condition2)
 
     def place_buttons(self):
         self.start_button.place(x=10, y=10, width=100, height=25)
         self.stop_button.place(x=10, y=40, width=100, height=25)
         self.update_button.place(x=10, y=150, width=100, height=25)
         self.create_matrix_button.place(x=500, y=10, width=200, height=25)
+        self.condition1_button.place(x=20, y=600,width=200,height=25)
+        #self.condition2_button.place(x=20, y=650, width=200, height=25)
 
 def create_preference_matrix(label_manager, rows=None,columns=None,):
     global n, m
@@ -116,6 +122,7 @@ class EntryManager:
         self.entries['pc'] = tk.Entry(master)
         self.entries['pm'] = tk.Entry(master)
         self.entries['ps'] = tk.Entry(master)
+        self.entries['limit']=tk.Entry(master)
         self.entries['iter'] = tk.Entry(master)
         self.entries['n'] = tk.Entry(master)
         self.entries['m'] = tk.Entry(master)
@@ -126,6 +133,7 @@ class EntryManager:
         self.entries['pm'].place(x=10, y=300, width=100, height=25)
         self.entries['ps'].place(x=10, y=350, width=100, height=25)
         self.entries['iter'].place(x=10, y=400, width=100, height=25)
+        self.entries['limit'].place(x=10,y=450,width=100,height=25)
         self.entries['n'].place(x=950, y=50, width=100, height=25)
         self.entries['m'].place(x=1150, y=50, width=100, height=25)
 

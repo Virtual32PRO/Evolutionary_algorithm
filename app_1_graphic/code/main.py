@@ -12,10 +12,40 @@ p = 100  # population size
 pc = 0.2  # elite percentage
 pm = 0.01  # mutations
 ps = 0.05  # mutation severity
+limit = 50 #limit w grupach
 
 
 
 #general codes section
+
+def excluded_subjects(m):
+    verse = [0 for _ in range(m)]
+    address = sample(range(m), 2)
+    for i in address:
+        verse[i] = 1
+    return address
+
+
+def limits(m):
+    j = 1
+    bad_subjects=[]
+    good_subjects=[]
+    while j != 0:
+        bad_subjects = excluded_subjects(m)
+        good_subjects = excluded_subjects(m)
+        if bad_subjects == good_subjects:
+            good_subjects = excluded_subjects(m)
+        else:
+            j -= 1
+
+    bad_address=bad_subjects
+    good_address=good_subjects
+    return bad_address,good_address
+
+bad_address,good_address=limits(frontend.m)
+
+
+
 
 def create_matrix_in(n,m):
     matrix = [0 for _ in range(m) for _ in range(n)]
@@ -35,14 +65,25 @@ def first_population_generator():
     return [ScheduleMatrix(create_matrix(frontend.n,frontend.m)) for _ in range(p)]
 
 def create_matrix(n, m):
+    global good_address,bad_address
     matrix = []
     for _ in range(n):
         verse=random_verse(m)
         matrix.append(verse)
     return matrix
 def random_verse(m):
+    global bad_address,good_address
+    i=1
+    b1=bad_address[0]
+    b2=bad_address[1]
+    g1=good_address[0]
+    g2=good_address[1]
     verse = [0 for _ in range(m)]
-    address = sample(range(m), 3)
+    address=[]
+    while i!=0:
+        address = sample(range(m), 3)
+        if not(b1 in address and b2 in address) and not((g1 in address) ^ (g2 in address)):
+            i = i - 1
     for i in address:
         verse[i] = 1
     return verse
@@ -51,7 +92,7 @@ def create_mask(n):
     return [randint(0,1) for _ in range(n)]
 
 def update_variables(entry_manager):
-    global p, pc, pm, ps
+    global p, pc, pm, ps,limit
 
     values = entry_manager.get_values()
 
@@ -64,6 +105,8 @@ def update_variables(entry_manager):
             pm = float(values['pm'])
         if values['ps']:
             ps = float(values['ps'])
+        if values['limit']:
+            limit=int(values['limit'])
         if values['iter']:
             frontend.MAX_ITERATION = int(values['iter'])
         if values['n']:
@@ -90,9 +133,9 @@ class ScheduleMatrix(Element):
         super().__init__()
 
     def _perform_mutation(self):
-        for _ in range(int(ps*frontend.n)):
-            random_index = randint(0, n-1)
-            self.matrix[random_index]=random_verse(m)
+        for _ in range(int(ps*self.n)):
+            random_index = randint(0, self.n-1)
+            self.matrix[random_index]=random_verse(self.m)
 
 
     def crossover(self, element2: 'Element' ) -> 'Element':
@@ -105,6 +148,15 @@ class ScheduleMatrix(Element):
             else:
                 child.append(element2.matrix[i])
         return ScheduleMatrix(child)
+
+    def check_group_limits(self):
+        matrix = np.array(list(self.matrix))
+        matrix = np.transpose(matrix)
+        columns_sum = [sum(kolumna) for kolumna in matrix]
+        if any(element > limit for element in columns_sum):
+            return 1
+        else:
+            return 0
 
 
     def evaluate_function(self):
@@ -138,8 +190,9 @@ if __name__ == "__main__":
     values = entry_manager.get_values()
     update_variables(entry_manager)
 
-    button_manager = ButtonManager(window, start, stop, update_variables,entry_manager,label_manager)
+    button_manager = ButtonManager(window, start, stop, update_variables,entry_manager,label_manager,limits)
     button_manager.place_buttons()
 
     window.mainloop()
 
+print(bad_address,good_address)
