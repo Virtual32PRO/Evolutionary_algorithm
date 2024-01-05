@@ -195,4 +195,4 @@ if __name__ == "__main__":
 
     window.mainloop()
 
-print(bad_address,good_address)
+
