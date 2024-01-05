@@ -1,12 +1,15 @@
 from abc import abstractmethod, ABC
 from random import random, choice
-import numpy as np
 
 is_running = False
-list_x=[]
-list_y=[]
+list_x = []
+list_y = []
 
+MATRIX_IN=  [[1,2,3],[2,1,3],[1,2,3]]
+MAX_ITERATION=300
 
+n=len(MATRIX_IN)
+m=len(MATRIX_IN[0])
 
 
 class Element(ABC):
@@ -30,7 +33,6 @@ class Element(ABC):
     def evaluate_function(self):
         pass
 
-
     @abstractmethod
     def check_group_limits(self):
         pass
@@ -44,17 +46,18 @@ class GeneticAlgorithm:
         self.stop_condition = stop_condition
         self.mutation_probability = mutation_probability
 
+
     def run(self):
-        population = self.first_generation_func()
+        global n,m
+        population = self.first_generation_func(n,m)
         population.sort(key=lambda x: -x.fitness)
         population_len = len(population)
         i = 0
-        global list_x
+        global list_x, list_y
         list_x=[]
-        global list_y
         list_y=[]
         global is_running
-        while True and is_running:
+        while  is_running:
             is_running = True
             selected = self.selection_model(population)
             new_population = selected.copy()
@@ -64,8 +67,6 @@ class GeneticAlgorithm:
                     child.mutation()
                 if child.check_group_limits() == 0:
                     new_population.append(child)
-
-
             population = new_population
             the_best_match = max(population, key=lambda x: x.fitness)
             list_x.append(i)
@@ -74,6 +75,9 @@ class GeneticAlgorithm:
             i += 1
             if self.stop_condition(i):
                 break
+
+
+
 
 
 

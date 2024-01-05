@@ -5,7 +5,7 @@ from random import sample, randint
 import numpy as np
 import AGenLibrary
 from frontend import PlottingApp, LabelManager,ButtonManager,EntryManager
-import frontend
+
 
 #Parameters
 p = 100  # population size
@@ -14,85 +14,64 @@ pm = 0.01  # mutations
 ps = 0.05  # mutation severity
 limit = 50 #limit w grupach
 
-
-
-#general codes section
-
-def excluded_subjects(m):
-    verse = [0 for _ in range(m)]
-    address = sample(range(m), 2)
-    for i in address:
-        verse[i] = 1
+#limits section
+def excluded_subjects(num_of_subject):
+    address = sample(range(num_of_subject), 2)
     return address
 
 
-def limits(m):
-    j = 1
-    bad_subjects=[]
-    good_subjects=[]
-    while j != 0:
-        bad_subjects = excluded_subjects(m)
-        good_subjects = excluded_subjects(m)
-        if bad_subjects == good_subjects:
-            good_subjects = excluded_subjects(m)
-        else:
-            j -= 1
+def limits(num_of_subject):
+    bad_subjects = excluded_subjects(num_of_subject)
+    good_subjects = excluded_subjects(num_of_subject)
+    if bad_subjects == good_subjects:
+        good_subjects = excluded_subjects(num_of_subject)
+    return bad_subjects, good_subjects
 
-    bad_address=bad_subjects
-    good_address=good_subjects
-    return bad_address,good_address
+bad_address, good_address = limits(AGenLibrary.m)
 
-bad_address,good_address=limits(frontend.m)
-
-
-
-
-def create_matrix_in(n,m):
-    matrix = [0 for _ in range(m) for _ in range(n)]
-    for i in range(n):
-        matrix[i]=sample(range(1,m+1),m)
-    return matrix
+#general codes section
 
 def elite_selection_model(generation):
+    """Funkcja realizująca strategię elitarną"""
     max_selected = int(len(generation) * pc)
     sorted_by_assess = sorted(generation, key=lambda x: -x.fitness)
     return sorted_by_assess[:max_selected]
 
 def stop_condition(iteration):
-    return iteration==frontend.MAX_ITERATION
+    """Funkcja realizująca warunek stopu poprzez liczbę iteracji"""
+    return iteration==AGenLibrary.MAX_ITERATION
 
-def first_population_generator():
-    return [ScheduleMatrix(create_matrix(frontend.n,frontend.m)) for _ in range(p)]
+def first_population_generator(num_of_student,num_of_subject):
+    """Funkcja odpowiadająca za generację populacji początkowej"""
+    return [ScheduleMatrix(create_matrix(num_of_student,num_of_subject)) for _ in range(p)]
 
 def create_matrix(n, m):
-    global good_address,bad_address
+    """Funkcja odpowiedzialna za tworzenie macierzy wewnętrznej (binarnej)"""
     matrix = []
     for _ in range(n):
         verse=random_verse(m)
         matrix.append(verse)
     return matrix
 def random_verse(m):
-    global bad_address,good_address
-    i=1
-    b1=bad_address[0]
-    b2=bad_address[1]
-    g1=good_address[0]
-    g2=good_address[1]
+    """Funkcja odpowiedzialna za stworzenie wektora binarnego o sumie wartości pozycji równej 3"""
+    global bad_address, good_address
     verse = [0 for _ in range(m)]
-    address=[]
-    while i!=0:
+    address = sample(range(m), 3)
+    if (bad_address[0] in address and bad_address[1] in address) or ((good_address[0] in address) ^ (good_address[1] in address)):
         address = sample(range(m), 3)
-        if not(b1 in address and b2 in address) and not((g1 in address) ^ (g2 in address)):
-            i = i - 1
     for i in address:
         verse[i] = 1
     return verse
 
 def create_mask(n):
+    """Funkcja odpowiedzialna za stworzenie maski o rozmiarze n"""
     return [randint(0,1) for _ in range(n)]
 
+#section responsible for control
+
 def update_variables(entry_manager):
-    global p, pc, pm, ps,limit
+    """Funkcja odpowiedzialna za aktualizacje parametrów algorytmu"""
+    global p, pc, pm, ps
 
     values = entry_manager.get_values()
 
@@ -105,27 +84,27 @@ def update_variables(entry_manager):
             pm = float(values['pm'])
         if values['ps']:
             ps = float(values['ps'])
-        if values['limit']:
-            limit=int(values['limit'])
         if values['iter']:
-            frontend.MAX_ITERATION = int(values['iter'])
+            AGenLibrary.MAX_ITERATION = int(values['iter'])
         if values['n']:
-            frontend.n = int(values['n'])
+            AGenLibrary.n = int(values['n'])
         if values['m']:
-            frontend.m = int(values['m'])
+            AGenLibrary.m = int(values['m'])
     except ValueError as e:
         print("Wprowadzono nieprawidłowe dane:", e)
 def start():
-
+    """Funkcja odpowiedzialna za start algorytmu"""
     AGenLibrary.is_running = True
     threading.Thread(target=genetic_algorithm.run).start()
 
 def stop():
-
+    """Funkcja odpowiedzialna za zatrzymanie algorytmu"""
     AGenLibrary.is_running = False
 
-class ScheduleMatrix(Element):
+#Schedule Class
 
+class ScheduleMatrix(Element):
+    """Klasa reprezentująca pojedyńczy przydział przedmiotów do studentów"""
     def __init__(self, matrix):
         self.matrix = matrix
         self.n=len(matrix)
@@ -133,12 +112,14 @@ class ScheduleMatrix(Element):
         super().__init__()
 
     def _perform_mutation(self):
+        """Metoda odpowiedzialna za mutacje"""
         for _ in range(int(ps*self.n)):
             random_index = randint(0, self.n-1)
             self.matrix[random_index]=random_verse(self.m)
 
 
-    def crossover(self, element2: 'Element' ) -> 'Element':
+    def crossover(self, element2: 'ScheduleMatrix' ) -> 'ScheduleMatrix':
+        """Metoda odpowiedzialna za krzyżowanie macierzy"""
         mask=create_mask(self.n)
         child=[]
         for i in range(self.n):
@@ -153,20 +134,22 @@ class ScheduleMatrix(Element):
         matrix = np.array(list(self.matrix))
         matrix = np.transpose(matrix)
         columns_sum = [sum(kolumna) for kolumna in matrix]
+        global limit
         if any(element > limit for element in columns_sum):
             return 1
         else:
             return 0
 
-
     def evaluate_function(self):
+        """Metoda odpowiedzialna za wyznaczenie funkcji celu dla danego przydziału"""
         matrix1 = np.array(self.matrix)
-        matrix2 = np.array(frontend.MATRIX_IN)
+        matrix2 = np.array(AGenLibrary.MATRIX_IN)
         product = np.multiply(matrix1, matrix2)
         return np.sum(product)
 
 
     def __repr__(self):
+        """Reprezentacja przydziału"""
         return str(self.matrix)
 
 
@@ -183,14 +166,13 @@ if __name__ == "__main__":
 
     app = PlottingApp(window)
 
-    label_manager = LabelManager(window,frontend.MATRIX_IN)
+    label_manager = LabelManager(window, AGenLibrary.MATRIX_IN)
     label_manager.place_labels()
 
     entry_manager = EntryManager(window)
-    values = entry_manager.get_values()
     update_variables(entry_manager)
 
-    button_manager = ButtonManager(window, start, stop, update_variables,entry_manager,label_manager,limits)
+    button_manager = ButtonManager(window, start, stop, update_variables,entry_manager,label_manager)
     button_manager.place_buttons()
 
     window.mainloop()
