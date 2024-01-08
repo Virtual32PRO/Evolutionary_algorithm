@@ -18,8 +18,8 @@ p = 100  # population size
 pc = 0.2  # elite percentage
 ps = 0.05  # mutation severity
 pm = 0.01  # mutations
-limit = 50 #limit w grupach
 name_file_txt = 'test_.txt'
+list_of_students=[i for i in range(AGenLibrary.n)]
 
 
 
@@ -39,6 +39,88 @@ def limits(num_of_subject):
     return bad_subjects, good_subjects
 
 bad_address, good_address = limits(AGenLibrary.m)
+
+def limits_in_groups(n,m):
+    return [randint(round(n/2),n) for _ in range(m)]
+
+limit=limits_in_groups(AGenLibrary.n,AGenLibrary.m)
+
+
+def podziel_uczniow(uczniowie):
+    uczniowie.sort()
+    liczba_uczniow = len(uczniowie)
+    limit_osob_w_grupie = 15
+
+    liczba_grup = (liczba_uczniow + limit_osob_w_grupie - 1) // limit_osob_w_grupie
+    grupy = [[] for _ in range(liczba_grup)]
+
+    for i, uczen in enumerate(uczniowie):
+        grupy[i % liczba_grup].append(uczen)
+
+    return grupy,liczba_grup
+
+groups,number_of_groups=podziel_uczniow(list_of_students)
+
+def create_schedule(m):
+    matrix=np.zeros((5,50))
+    for i in range (m):
+        while True:
+            start_hour=randint(1,42)
+            start_day=randint(0,4)
+            if not(matrix[start_day][start_hour-1] == 1 or matrix[start_day][start_hour + 7] == 1):
+                for j in range(start_hour, start_hour + 6):
+                    matrix[start_day][j]=1
+                break
+    matrix=np.transpose(matrix)
+    return matrix
+
+def for_all_groups_basic(number,m):
+    schedule=[]
+    for i in range(number):
+        schedule.append(create_schedule(m))
+    return schedule
+
+basic_schedule=for_all_groups_basic(number_of_groups,AGenLibrary.m)
+
+def obieraki_plan(limit,m):
+    liczba_grup=[]
+    obieraki=[]
+    obieraki_schedule=[]
+    for j in limit:
+        liczba_grup.append((j + 15 - 1) // 15)
+    for i in liczba_grup:
+        obieraki=create_schedule(i)
+        obieraki_schedule.append(obieraki)
+    return obieraki_schedule,liczba_grup
+
+obieraki_schedule,liczba_grup=obieraki_plan(limit,AGenLibrary.m)
+
+def assign_groups_for_obieraki(m):
+    global obieraki_schedule
+    podzial=[]
+    for i in range(m):
+        macierz=obieraki_schedule[i]
+        macierz = np.array(list(macierz))
+        macierz = np.transpose(macierz)
+        poczatki_grup = []
+        grupy = {}
+
+        for wiersz_idx, wiersz in enumerate(macierz):
+            wiersz_logiczny = wiersz == 1
+            indeksy_grup = np.where(np.convolve(wiersz_logiczny, [1] * 6, mode='valid') == 6)[0]
+            for indeks in indeksy_grup:
+                poczatki_grup.append((wiersz_idx, indeks))
+
+        licznik = 1
+        for adres in poczatki_grup:
+            grupy[licznik] = adres
+            licznik += 1
+        podzial.append(grupy)
+
+    return podzial
+
+podzial=assign_groups_for_obieraki(AGenLibrary.m)
+
 
 
 #general codes section
@@ -65,7 +147,7 @@ def scaling_fun(element, last_element):
     n = AGenLibrary.n
     m = AGenLibrary.m
     diff=element.fitness - last_element.fitness
-    return (diff) * 0.5 * (n * (n - 1) * (n - 2) * m)
+    return diff * 0.5 * (n * (n - 1) * (n - 2) * m)
 
 def tournament_selection_model(generation):
     num_of_parents = int(len(generation) * pc)
@@ -126,6 +208,7 @@ def create_mask(n):
 def update_variables(entry_manager):
     """Funkcja odpowiedzialna za aktualizacje parametrów algorytmu"""
     global p, pc, pm, ps
+    global bad_address, good_address, limit, list_of_students, groups, number_of_groups, basic_schedule, obieraki_schedule, podzial
 
     values = entry_manager.get_values()
     try:
@@ -143,6 +226,15 @@ def update_variables(entry_manager):
             AGenLibrary.n = int(values['n'])
         if values['m']:
             AGenLibrary.m = int(values['m'])
+        if values['m'] or values['n']:
+            bad_address, good_address = limits(AGenLibrary.m)
+            limit=limits_in_groups(AGenLibrary.n,AGenLibrary.m)
+            list_of_students = [i for i in range(AGenLibrary.n)]
+            groups, number_of_groups = podziel_uczniow(list_of_students)
+            basic_schedule = for_all_groups_basic(number_of_groups,AGenLibrary.m)
+            obieraki_schedule,liczba_grup=obieraki_plan(limit,AGenLibrary.m)
+            podzial = assign_groups_for_obieraki(AGenLibrary.m)
+
         if values['probability_elite']:
             genetic_algorithm.update_variables_elite(float(values['probability_elite']))
         if values['probability_rank']:
@@ -196,12 +288,11 @@ class ScheduleMatrix(Element):
         return ScheduleMatrix(child)
 
     def check_group_limits(self):
-        """Metoda sprawdzająca czy ScheduleMatrix należy do grupy rozwiązań dozwolonych"""
         matrix = np.array(list(self.matrix))
         matrix = np.transpose(matrix)
         columns_sum = [sum(kolumna) for kolumna in matrix]
         global limit
-        if any(element > limit for element in columns_sum):
+        if any(element > l for element, l in zip(columns_sum, limit)):
             return 1
         else:
             return 0

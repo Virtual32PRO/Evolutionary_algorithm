@@ -61,6 +61,7 @@ class LabelManager:
         self.label_m = tk.Label(master, text="Liczba kolumn")
 
 
+
     def update_matrix_label(self, new_matrix):
         """ Metoda aktualizująca etykietę macierzy preferencji"""
         new_text = '\n'.join(['\t'.join(map(str, row)) for row in new_matrix])

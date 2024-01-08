@@ -40,11 +40,13 @@ class Element(ABC):
 class GeneticAlgorithm:
 
     def __init__(self, first_population_generator: callable,
-                 selection_model: callable, stop_condition: callable, mutation_probability: float = 0.1):
+                 selection_model: callable, stop_condition: callable, mutation_probability: float = 0.1,
+                 first_population_generator_for_schedule: callable):
         self.first_generation_func = first_population_generator
         self.selection_model = selection_model
         self.stop_condition = stop_condition
         self.mutation_probability = mutation_probability
+        self.first_generation_func_for_schedule=first_population_generator_for_schedule
 
 
     def run(self):
@@ -53,6 +55,7 @@ class GeneticAlgorithm:
         population.sort(key=lambda x: -x.fitness)
         population_len = len(population)
         i = 0
+        j=0
         global list_x, list_y
         list_x=[]
         list_y=[]
@@ -76,6 +79,11 @@ class GeneticAlgorithm:
             if self.stop_condition(i):
                 break
 
+
+        population_schedule=self.first_generation_func_for_schedule(population,n,m)
+        while is_running:
+            is_running=True
+            selected = self.selection_model()
 
 
 
