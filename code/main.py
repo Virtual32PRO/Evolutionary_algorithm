@@ -19,6 +19,8 @@ pc = 0.2  # elite percentage
 ps = 0.05  # mutation severity
 pm = 0.01  # mutations
 limit = 50 #limit w grupach
+name_file_txt = 'test_.txt'
+
 
 
 #limits section
@@ -38,6 +40,7 @@ def limits(num_of_subject):
 
 bad_address, good_address = limits(AGenLibrary.m)
 
+
 #general codes section
 
 def elite_selection_model(generation):
@@ -51,17 +54,28 @@ def roulette_wheel_selection_model(generation):
     sorted_by_assess = sorted(generation, key=lambda x: -x.fitness)
     num_of_element = len(generation)
     weight_list = []
-    sum=0
-    for iter in  sorted_by_assess:
-        sum=sum+iter.fitness
+    last_element = sorted_by_assess[-1]
     for iter in range(num_of_element):
-        element= sorted_by_assess[iter]
-        weight_list.append(element.fitness/sum)
+        element = sorted_by_assess[iter]
+        weight_list.append(scaling_fun(element,last_element))
     selected_parent = random.choices(sorted_by_assess, weights=weight_list, k=num_of_parents)
     return selected_parent
 
+def scaling_fun(element, last_element):
+    n = AGenLibrary.n
+    m = AGenLibrary.m
+    diff=element.fitness - last_element.fitness
+    return (diff) * 0.5 * (n * (n - 1) * (n - 2) * m)
+
 def tournament_selection_model(generation):
-    pass
+    num_of_parents = int(len(generation) * pc)
+    sorted_by_assess = sorted(generation, key=lambda x: -x.fitness)
+    selected_parent = []
+    for iter in range(num_of_parents):
+        list_tournament = random.choice(sorted_by_assess, k=4)
+        winner=max(list_tournament, key=lambda x: -x.fitness)
+        selected_parent.append(winner)
+    return selected_parent
 
 def rank_selection_model(generation):
     num_of_parents = int(len(generation) * pc)
@@ -114,7 +128,6 @@ def update_variables(entry_manager):
     global p, pc, pm, ps
 
     values = entry_manager.get_values()
-
     try:
         if values['p']:
             p = int(values['p'])
@@ -138,9 +151,10 @@ def update_variables(entry_manager):
             genetic_algorithm.update_variables_roulette(float(values['probability_roulette']))
         if values['probability_tournament']:
             genetic_algorithm.update_variables_tournament(float(values['probability_tournament']))
-
+        data.config(text="Dane wprowadzono pomyślnie!")
     except ValueError as e:
         print("Wprowadzono nieprawidłowe dane:", e)
+        data.config(text="Błędne dane!")
 def start():
     """Funkcja odpowiedzialna za start algorytmu"""
     AGenLibrary.is_running = True
@@ -243,7 +257,9 @@ if __name__ == "__main__":
                            lambda: show_frame(main_frame),
                            lambda: show_frame(instruction.frame),
                            lambda: show_frame(information.frame))
-
+    #label
+    data = tk.Label(main_frame, text="otworzono program")
+    data.place(x=10, y=150)
     #zarządzanie interfacem badawczym
     app = PlottingApp(main_frame)
 

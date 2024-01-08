@@ -50,7 +50,8 @@ class LabelManager:
         self.label_iter = tk.Label(master, text="Podaj liczbę iteracji")
         self.label_legenda = tk.Label(master,
                                       text="P - Liczność populacji - domyślnie 100,\n"
-                                           "PC - Liczba od 0 do 1 definiująca ile procent całej populacji należy do elity, - domyślnie 0.2\n"
+                                           "PC - Liczba od 0 do 1 definiująca ile procent całej populacji należy do elity (w przypadku selekcji elitarnej)\n"
+                                           "lub ile rodziców powstanie w procesie selekcji (pozostałe metody), - domyślnie 0.2\n"
                                            "PM - Liczba od 0 do 1 definiująca ile procent całej populacji ulegnie mutacji - domyślnie 0.01,\n"
                                            "PS - Liczba od 0 do 1 definiująca ile chromosomów danego osobnika ulegnie mutacji - domyślnie 0.05",
                                       font=("Arial", 12),
@@ -65,6 +66,8 @@ class LabelManager:
         self.label_Probability_of_selection_rank = tk.Label(master, text="Prawdopodobieństwo wyboru selekcji Rankingowej")
         self.label_Probability_of_selection_roulette = tk.Label(master, text="Prawdopodobieństwo wyboru selekcji Ruletki")
         self.label_Probability_of_selection_tournament = tk.Label(master, text="Prawdopodobieństwo wyboru selekcji Turniejowej")
+        self.test_matrix = tk.Label(master, text="Pobieranie Macierzy testowych\n będących w pliku test_matrix")
+
 
 
     def update_matrix_label(self, new_matrix):
@@ -81,7 +84,7 @@ class LabelManager:
         self.label_pm.place(x=30, y=340)
         self.label_ps.place(x=30, y=400)
         self.label_iter.place(x=20, y=460)
-        self.label_legenda.place(x=30, y=520)
+        self.label_legenda.place(x=30, y=550)
         #self.label_matrix_in.place(x=800, y=130)
         self.scrollable_label.place(x=800, y=130)
         self.label_matrix_description.place(x=800, y=40)
@@ -92,6 +95,7 @@ class LabelManager:
         self.label_Probability_of_selection_rank.place(x=1240, y=550)
         self.label_Probability_of_selection_roulette.place(x=1240, y=600)
         self.label_Probability_of_selection_tournament.place(x=1240, y=650)
+        self.test_matrix.place(x=1270, y=200)
 
     def create_scrollable_label(self,parent, width, height):
         frame = tk.Frame(parent)
@@ -133,6 +137,7 @@ class ButtonManager:
         self.update_button = tk.Button(master, text="Wprowadź dane", command=lambda: update_action(self.entry_manager))
         self.create_matrix_button = tk.Button(master, text="Wygeneruj preferencje studentów", command=lambda:self._create_preference_matrix(self.label_manager, AGenLibrary.n, AGenLibrary.m))
         self.menu_button = tk.Button(master, text="Menu", bg='lightblue', fg='black', font=('Helvetica', 15, 'bold'), relief=tk.RAISED, borderwidth=2, command= lambda: show_menu(self.welcome_page.frame))
+        self.test_matrix = tk.Button(master, text="Matrix_1_test", command=lambda: self._reload_matrix_txt("test_matrix.txt",self.label_manager))
 
     def place_buttons(self):
         """Metoda odpowiedzialna za rozmieszczenie przycisków"""
@@ -140,7 +145,9 @@ class ButtonManager:
         self.stop_button.place(x=20, y=70, width=100, height=25)
         self.update_button.place(x=20, y=190, width=100, height=25)
         self.create_matrix_button.place(x=500, y=40, width=200, height=25)
-        self.menu_button.place(x=80, y=650, width=220, height=37)
+        self.menu_button.place(x=80, y=670, width=220, height=37)
+        self.test_matrix.place(x=1250, y=250, width=220, height=37)
+
 
     def _create_preference_matrix(self,label_manager, num_of_student, num_of_subject):
         """Metoda odpowiedzialna za wygenerowanie macierzy preferencji"""
@@ -148,6 +155,16 @@ class ButtonManager:
         for i in range(num_of_student):
             matrix[i] = random.sample(range(1, num_of_subject+1), num_of_subject)
         AGenLibrary.MATRIX_IN=matrix
+        label_manager.update_matrix_label(matrix)
+    def _reload_matrix_txt(self,name_of_file,label_manager):
+        matrix = []
+        with open(name_of_file, 'r') as file:
+            for line in file:
+                verse = [int(element) for element in line.split()]
+                matrix.append(verse)
+        AGenLibrary.MATRIX_IN = matrix
+        AGenLibrary.n = len(matrix)
+        AGenLibrary.m = len(matrix[0])
         label_manager.update_matrix_label(matrix)
 
 

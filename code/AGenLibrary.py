@@ -79,7 +79,7 @@ class GeneticAlgorithm:
             the_best_match = max(population, key=lambda x: x.fitness)
             list_x.append(i)
             list_y.append(the_best_match.fitness)
-            print("Iteration number: {} Matrix: {} fitness: {}".format(i, the_best_match, the_best_match.fitness))
+            #print("Iteration number: {} Matrix: {} fitness: {}".format(i, the_best_match, the_best_match.fitness))
             global num_of_iteration
             num_of_iteration = i
             if self.stop_condition(i):
